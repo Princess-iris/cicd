@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_REPO_URL = 'https://github.com/Princess-iris/cicd'
-        GIT_CREDENTIALS_ID = 'cicd-pat'
+        GIT_CREDENTIALS_ID = 'cicd_pat'
         GIT_BRANCH = 'main'
     }
 
