@@ -15,8 +15,8 @@ pipeline {
                     $class: 'GitSCM',
                     branches: [[name: "*/${env.GIT_BRANCH}"]],
                     userRemoteConfigs: [[
-                        url: "${env.GIT_REPO_URL}",
-                        credentialsId: "${env.GIT_CREDENTIALS_ID}"
+                        url: "${env.https://github.com/Princess-iris/cicd/}",
+                        credentialsId: "${env.Ayrisle}"
                     ]]
                 ]
             }
