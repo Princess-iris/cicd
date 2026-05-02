@@ -1,5 +1,5 @@
 <body style="background-color:green>
     <h1><?php
-        echo "IRIS"; 
+        echo "gayos"; 
     ?></h1>
 </body>
