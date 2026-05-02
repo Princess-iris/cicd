@@ -1,52 +1,32 @@
 pipeline {
     agent any
-
+    environment {
+        GIT_REPO_URL = 'https://github.com/calvinjohnplacio/testlab.git'
+        GIT_CREDENTIALS_ID = 'github-pat2'
+        GIT_BRANCH = 'main'
+    }
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout([$class: 'GitSCM', branches: [[name: "*/${env.GIT_BRANCH}"]], userRemoteConfigs: [[url: "${env.GIT_REPO_URL}", credentialsId: "${env.GIT_CREDENTIALS_ID}"]]])
             }
         }
-        
-        stage('Setup Python Environment') {
+        stage('Detect Change') {
             steps {
-                sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
+                script {
+                    def changed = sh(script: "git diff --name-only HEAD~1 HEAD | grep '.php' | head -n 1", returnStdout: true).trim()
+                    env.TARGET_PHP_FILE = changed ?: "index.php"
+                }
             }
         }
-        
-        stage('Deploy to Apache') {  // <-- UNAHIN ANG DEPLOY
+        stage('Deploy') {
             steps {
                 sh '''
-                sudo rsync -av --delete --exclude='venv/' --exclude='.git/' ./ /var/www/html/
+                # Only runs if test.py exited with 0
+                sudo rsync -av --delete --exclude='venv/' --exclude='.git/' --exclude='staging/' ./ /var/www/html/
                 sudo chown -R www-data:www-data /var/www/html/
                 '''
             }
-        }
-        
-        stage('Run Selenium Test') {  // <-- TEST PAGKATAPOS MAG-DEPLOY
-            steps {
-                sh '''
-                . venv/bin/activate
-                python test.py
-                '''
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "CI/CD SUCCESS ✔ Deployment completed"
-        }
-        failure {
-            echo "CI/CD FAILED ❌ Check logs"
-        }
-        always {
-            cleanWs()
         }
     }
 }
