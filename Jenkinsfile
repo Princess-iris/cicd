@@ -8,15 +8,14 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout SCM') {
             steps {
                 checkout scm: [
                     $class: 'GitSCM',
                     branches: [[name: "*/${env.GIT_BRANCH}"]],
                     userRemoteConfigs: [[
-                        url: "${env.https://github.com/Princess-iris/cicd}",
-                        credentialsId: "${env.Ayrisle}"
+                        url: "${env.GIT_REPO_URL}",
+                        credentialsId: "${env.GIT_CREDENTIALS_ID}"
                     ]]
                 ]
             }
@@ -25,12 +24,11 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 sh '''
-                echo "Setting up Python environment..."
-      python3 -m venv venv
-                . venv/bin/activate
-
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                    echo "Setting up Python environment..."
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
                 '''
             }
         }
@@ -38,10 +36,9 @@ pipeline {
         stage('Run Selenium Test') {
             steps {
                 sh '''
-                echo "Running Selenium tests..."
-
-                . venv/bin/activate
-                python test.py
+                    echo "Running Selenium tests..."
+                    . venv/bin/activate
+                    python test.py
                 '''
             }
         }
@@ -49,13 +46,9 @@ pipeline {
         stage('Deploy to Apache') {
             steps {
                 sh '''
-                echo "Deploying FULL PHP project to Apache..."
-
-                # Sync all files (NEW + UPDATED + DELETED)
-                sudo rsync -av -o --delete ./ /var/www/html/
-
-                # Fix ownership
-                sudo chown -R www-data:www-data /var/www/html/
+                    echo "Deploying FULL PHP project to Apache..."
+                    sudo rsync -av -o --delete ./ /var/www/html/
+                    sudo chown -R www-data:www-data /var/www/html/
                 '''
             }
         }
@@ -73,4 +66,3 @@ pipeline {
         }
     }
 }
-
