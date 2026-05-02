@@ -1,54 +1,38 @@
 pipeline {
     agent any
 
-    environment {
-        GIT_REPO_URL = 'https://github.com/Princess-iris/cicd'
-        GIT_CREDENTIALS_ID = 'cicd_pat'
-        GIT_BRANCH = 'main'
-    }
-
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
-                checkout scm: [
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${env.GIT_BRANCH}"]],
-                    userRemoteConfigs: [[
-                        url: "${env.GIT_REPO_URL}",
-                        credentialsId: "${env.GIT_CREDENTIALS_ID}"
-                    ]]
-                ]
+                checkout scm
             }
         }
-
+        
         stage('Setup Python Environment') {
             steps {
                 sh '''
-                    echo "Setting up Python environment..."
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
                 '''
             }
         }
-
-        stage('Run Selenium Test') {
+        
+        stage('Deploy to Apache') {  // <-- UNAHIN ANG DEPLOY
             steps {
                 sh '''
-                    echo "Running Selenium tests..."
-                    . venv/bin/activate
-                    python test.py
+                sudo rsync -av --delete --exclude='venv/' --exclude='.git/' ./ /var/www/html/
+                sudo chown -R www-data:www-data /var/www/html/
                 '''
             }
         }
-
-        stage('Deploy to Apache') {
+        
+        stage('Run Selenium Test') {  // <-- TEST PAGKATAPOS MAG-DEPLOY
             steps {
                 sh '''
-                    echo "Deploying FULL PHP project to Apache..."
-                    sudo rsync -av -o --delete ./ /var/www/html/
-                    sudo chown -R www-data:www-data /var/www/html/
+                . venv/bin/activate
+                python test.py
                 '''
             }
         }
