@@ -1,4 +1,4 @@
-<body style="background-color:pink">
+<body style="background-color:blue">
     <h1><?php
         echo "IIIIIRIS"; 
     ?></h1>
