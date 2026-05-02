@@ -1,31 +1,40 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 import time
 
-# Chrome options para sa Jenkins environment
-chrome_options = Options()
-chrome_options.add_argument('--headless')        # Walang GUI
-chrome_options.add_argument('--no-sandbox')      # Kailangan sa Jenkins
-chrome_options.add_argument('--disable-dev-shm-usage')  # Para sa limited memory
-chrome_options.add_argument('--disable-gpu')     # Optional, pero recommended
-chrome_options.add_argument('--window-size=1920,1080')  # Set window size
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
 
-# I-set ang chromedriver path (galing sa installation mo)
 service = Service('/usr/bin/chromedriver')
-
-# Initialize driver
-driver = webdriver.Chrome(service=service, options=chrome_options)
+driver = webdriver.Chrome(service=service, options=options)
 
 try:
-    # I-test ang local Apache server mo
     driver.get("http://localhost")
-    time.sleep(2)  # Hintayin mag-load ang page
+    time.sleep(2)
+    page_source = driver.page_source
     
-    # I-check kung may "Hello CI/CD World" sa page
-    assert "Hello CI/CD World" in driver.page_source
-    print("TEST PASSED ✅")
+    # I-print ang page source para sa debugging
+    print("=== PAGE SOURCE START ===")
+    print(page_source[:2000])  # Unang 2000 characters lang
+    print("=== PAGE SOURCE END ===")
     
+    # I-check kung may text
+    if "Hello CI/CD World" in page_source:
+        print("TEST PASSED ✅")
+    else:
+        print("TEST FAILED ❌ - 'Hello CI/CD World' not found")
+        print("Nakita sa page:")
+        if "<?php" in page_source:
+            print("⚠️  PHP code ay hindi na-process - problema sa PHP configuration")
+        elif "php" in page_source.lower():
+            print("⚠️  May PHP-related text pero hindi nag-render")
+        else:
+            print("❌ Walang PHP output at all")
+        
+        exit(1)
+        
 finally:
     driver.quit()
