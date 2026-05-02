@@ -1,4 +1,4 @@
 <?php
-echo "<h1>IRIS</h1>";
+echo "<h1>IRIs</h1>";
 ?>
 
