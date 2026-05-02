@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        GIT_REPO_URL = https://github.com/Princess-iris/cicd.git
+        GIT_REPO_URL = 'https://github.com/Princess-iris/cicd.git'
         GIT_CREDENTIALS_ID = 'github-pat2'
         GIT_BRANCH = 'main'
     }
